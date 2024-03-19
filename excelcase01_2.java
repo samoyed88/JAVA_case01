@@ -27,13 +27,12 @@ public class excelcase01_2 {
 			name[i] = new ArrayList<String>();
 			name2[i] = new ArrayList<String>();
 		}
+		//從excel讀取組別學號姓名並建立成陣列
 		read(name, name2, number, number2);
-		//宣告變數
-		int count = 1;
 		// 顯示所有人
 		show(name2, number2);
 		// 請假者刪除(不會抽到)
-		System.out.println("請輸入請假或缺席者學號，如果輸入完成請輸入N或n");
+		System.out.println("請輸入請假或缺席者學號(可連續輸入)，如果輸入完成請輸入N或n");
 		String str = sc.next();
 		while (!str.equalsIgnoreCase("n")) {
 			search(number2, str, name2);
@@ -42,12 +41,12 @@ public class excelcase01_2 {
 		// 顯示所有人
 		show(name2, number2);
 		// 抽籤系統
+		int count = 1;//宣告變數count_計算次數用
 		int num = (int) (Math.random() * 10);// 隨機一個1~10的數字
 		int num2=num;
 		do {
 			System.out.println("第" + count + "次抽籤名單");
 			random(name2, ++num);
-			//System.out.println(num);
 			System.out.println("輸入任意字可重抽，N退出");
 			str = sc.next();
 			count++;
@@ -139,7 +138,7 @@ public class excelcase01_2 {
 		try (Workbook workbook = new XSSFWorkbook()) {
             // 創建新的工作表
             Sheet sheet = workbook.createSheet("students");
-            int rowcount=1,count1=1;
+            int rowcount=1;
          // 創建第一行（標題行）
             Row headerRow = sheet.createRow(0);
 
