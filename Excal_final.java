@@ -35,25 +35,16 @@ class save{
 public class Excal_final {
 
 	public static void main(String[] args) {
-		// 建立Scanner物件
-		Scanner sc = new Scanner(System.in);
-		save original=groupnum();//原始資料(不修改)
+		Scanner sc = new Scanner(System.in);// 建立Scanner物件
+		save original=read();//原始資料(不修改)
 		save leave=original;//若有請假、缺席可臨時修改
 		save Record=new save();//記錄用
 		Record.groupcount=leave.groupcount;//組別數(透過excel讀取)
 		String inputstr;// 使用者輸入數字或n來指定行為
-		int count = 1, input;
+		int input=0;
 		// 從excel讀取組別學號姓名並建立成陣列
-		read(original);
 		do {
-			System.out.println("輸入1可顯示目前名單");
-			System.out.println("輸入2可設定請假者");
-			System.out.println("輸入3隨機數字抽籤");
-			System.out.println("輸入4指定數字抽籤");
-			System.out.println("輸入5重現抽籤");
-			System.out.println("輸入6可指定第幾次抽籤名單");
-			System.out.println("輸入7可將結果存入excel");
-			System.out.println("輸入n退出");
+			show();
 			inputstr = sc.next();
 			try {
 				input = Integer.parseInt(inputstr);
@@ -67,34 +58,19 @@ public class Excal_final {
 				show(leave);
 				break;
 			case 2:
-				System.out.println("請輸入請假或缺席者學號，如果輸入完成請輸入N或n");
-				String str = sc.next();
-				while (!str.equalsIgnoreCase("n")) {
-					search(leave,str);
-					str = sc.next();
-				}
+				case2(leave);
 				break;
 			case 3:
-				leave.randomnum = (int) (Math.random() * 10);// 隨機一個1~10的數字
-				do {
-					System.out.println("第" + count + "次抽籤名單");
-					random(leave,Record);
-					System.out.println("輸入任意字可重抽，N退出");
-					str = sc.next();
-					count++;
-				} while (!str.equalsIgnoreCase("n"));
+				case3(leave,Record);
 				break;
 			case 4:
-				System.out.println("請輸入一指定數字抽籤");
-				random(leave,Record,sc.nextInt());
+				case4(leave,Record);
 				break;
 			case 5:
 				reappear(Record);
 				break;
 			case 6:
-				System.out.println("請輸入數字來顯示第n次的抽籤結果");
-				int time = sc.nextInt();
-				reappear(Record,time);
+				case6(Record);
 				break;
 			case 7:
 				save(Record);
@@ -107,43 +83,23 @@ public class Excal_final {
 		sc.close();
 	}
 	//讀取組別數並且建構original物件
-	public static save groupnum() {
+	public static save read() {
 		int group=0;
 		try {
 			// 使用Apache POI庫中的XSSFWorkbook類別來建立一個Excel工作簿的物件，並從指定的檔案路徑中讀取檔案內容
 			XSSFWorkbook xssfWorkbook = new XSSFWorkbook(new FileInputStream(
-					"C:\\Users\\befor\\OneDrive - Ming Chuan University\\Documents\\student0220.xlsx"));
+					"C:\\Users\\befor\\eclipse-workspace\\excel\\src\\excel\\student0220.xlsx"));
 			// 使用xssfWorkbook物件的getSheetAt方法來取得第一個工作表(sheet)的物件，並存入sheet變數中
 			XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
 			// 使用sheet物件的getLastRowNum方法來取得工作表中的最大行數，並存入maxRow變數中
 			int maxRow = sheet.getLastRowNum();
-			// 使用for迴圈來遍歷工作表中的每一行(row)，從第0行開始，到最大行數結束，每次遞增1
+			// 使用for迴圈來遍歷工作表中的每一行(row)，從第1行開始，到最大行數結束，每次遞增1
 			for (int row = 0; row <= maxRow; row++) {
 				// 讀取組別
 				XSSFCell groupcell = sheet.getRow(row).getCell(2);
 				group = Integer.parseInt(groupcell.toString());
 			}
-			
-			// 如果發生IOException異常，則捕捉並印出異常的堆疊追蹤
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		//建構original物件
-		save original=new save(group);
-		return original;
-	}
-	//讀取內容並將值給到original物件的Arraylist當中
-	public static void read(save original) {
-		int group;
-		try {
-			// 使用Apache POI庫中的XSSFWorkbook類別來建立一個Excel工作簿的物件，並從指定的檔案路徑中讀取檔案內容
-			XSSFWorkbook xssfWorkbook = new XSSFWorkbook(new FileInputStream(
-					"C:\\Users\\befor\\OneDrive - Ming Chuan University\\Documents\\student0220.xlsx"));
-			// 使用xssfWorkbook物件的getSheetAt方法來取得第一個工作表(sheet)的物件，並存入sheet變數中
-			XSSFSheet sheet = xssfWorkbook.getSheetAt(0);
-			// 使用sheet物件的getLastRowNum方法來取得工作表中的最大行數，並存入maxRow變數中
-			int maxRow = sheet.getLastRowNum();
-			// 使用for迴圈來遍歷工作表中的每一行(row)，從第0行開始，到最大行數結束，每次遞增1
+			save original=new save(group);
 			for (int row = 0; row <= maxRow; row++) {
 				// 讀取組別
 				XSSFCell groupcell = sheet.getRow(row).getCell(2);
@@ -155,10 +111,15 @@ public class Excal_final {
 				original.number[group - 1].add(numcell.toString());
 				original.name[group - 1].add(namecell.toString());
 			}
+			return original;
 			// 如果發生IOException異常，則捕捉並印出異常的堆疊追蹤
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(0);
 		}
+		//建構original物件
+		save original=new save(group);
+		return original;
 	}
 	
 	public static void show(save leave) {
@@ -230,11 +191,13 @@ public class Excal_final {
 			System.out.println("第"+(group++)+"組："+Record.records.get(i)+Record.records.get(i+1));
 		}
 		System.out.println();
+		
+		//若輸入超過次數會造成報錯
 	}
 
 	public static void save(save Record) {
 		// 保存文件的位置
-		String filepath = "C:\\Users\\befor\\OneDrive - Ming Chuan University\\Documents\\save.xlsx";
+		String filepath = "C:\\Users\\befor\\eclipse-workspace\\excel\\src\\excel\\save.xlsx";
 		try (Workbook workbook = new XSSFWorkbook()) {
 			// 創建新的工作表
 			Sheet sheet = workbook.createSheet("students");
@@ -279,5 +242,49 @@ public class Excal_final {
 			e.printStackTrace();
 		}
 
+	}
+	public static void show() {
+		System.out.println("輸入1可顯示目前名單");
+		System.out.println("輸入2可設定請假者");
+		System.out.println("輸入3隨機數字抽籤");
+		System.out.println("輸入4指定數字抽籤");
+		System.out.println("輸入5重現抽籤");
+		System.out.println("輸入6可指定第幾次抽籤名單");
+		System.out.println("輸入7可將結果存入excel");
+		System.out.println("輸入n退出");
+	}
+	public static void case2(save leave){
+		System.out.println("請輸入請假或缺席者學號，如果輸入完成請輸入N或n");
+		Scanner sc=new Scanner(System.in);
+		String str = sc.next();
+		while (!str.equalsIgnoreCase("n")) {
+			search(leave,str);
+			str = sc.next();
+		}
+		//sc.close();
+	}
+	public static void case3(save leave,save Record) {
+		leave.randomnum = (int) (Math.random() * 10);// 隨機一個1~10的數字
+		int count=1;
+		String str;
+		Scanner sc=new Scanner(System.in);
+		do {
+			System.out.println("第" + count + "次抽籤名單");
+			random(leave,Record);
+			System.out.println("輸入任意字可重抽，N退出");
+			str = sc.next();
+			count++;
+		} while (!str.equalsIgnoreCase("n"));
+	}
+	public static void case4(save leave,save Record) {
+		System.out.println("請輸入一指定數字抽籤");
+		Scanner sc=new Scanner(System.in);
+		random(leave,Record,sc.nextInt());
+	}
+	public static void case6(save Record) {
+		System.out.println("請輸入數字來顯示第n次的抽籤結果");
+		Scanner sc=new Scanner(System.in);
+		int time = sc.nextInt();
+		reappear(Record,time);
 	}
 }
